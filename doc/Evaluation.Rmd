@@ -4,11 +4,21 @@ author: "sile yang"
 date: "4/7/2018"
 output: html_document
 ---
-```{r}
-library(MLmetrics)
+
+```{r message=FALSE, warning=FALSE}
+
+packages <- c("MLmetrics","Metrics","tidyverse")
+
+packages <- lapply(packages, FUN = function(x) {
+  if(!require(x, character.only = TRUE)) {
+    install.packages(x)
+  library(x, character.only = TRUE)
+  }
+})
 ```
 
-```{r}
+```{r message=FALSE, warning=FALSE}
+#setwd("/Users/miezai/Documents/GitHub/project-3-algorithms-project-3-algorithms-group-5/data")
 load("/Users/miezai/Documents/GitHub/project-3-algorithms-project-3-algorithms-group-5/data/EM_UI_test.RData")
 load("/Users/miezai/Documents/GitHub/project-3-algorithms-project-3-algorithms-group-5/data/MS_UI_test.RData")
 
@@ -20,28 +30,29 @@ load("/Users/miezai/Documents/GitHub/project-3-algorithms-project-3-algorithms-g
 
 ### Evaluation 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+source("/Users/miezai/Documents/GitHub/project-3-algorithms-project-3-algorithms-group-5/lib/evaluation.R")
+
 #select part of matrix
+
 pred <- movie_pred[,1:100]
 test <- movie_UI_test[,1:100]
 
-mae <- function(prediction,test_data){
-  matrix_mae <- matrix(ncol = 2)
-  for (i in 1:nrow(test_data)){
-  cols_to_test <- which(!is.na(test_data[i, ]))
-  pred  <- prediction[i, ]
-  
-  mae <- MAE(cols_to_test,pred)
-  
-  labels <- cbind(i, mae)
-  matrix_mae <- rbind(matrix_mae,labels)
-  }
-  
-  matrix_mae <- na.omit(matrix_mae)
-  evaluation = sum(matrix_mae[,2])/i
-  
-  return(evaluation)
-}
+pred_MS <- MS_pred[,1:100]
+test_MS <- MS_UI[,1:100]
 
-mae(pred, test)
+#I don't evaluate the whole dataset.. 
+#Feel free generate evaluations of the whole metrics, but I just wanna make you guys know this is not the final version of evaluation..
 ```
+
+```{r message=FALSE, warning=FALSE}
+#MAE
+eva_mae(pred, test)
+```
+
+```{r message=FALSE, warning=FALSE}
+#RMSE
+eva_rmse(pred,test)
+```
+
+
 
