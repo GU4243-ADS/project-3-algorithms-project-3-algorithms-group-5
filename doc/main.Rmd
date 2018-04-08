@@ -1,0 +1,90 @@
+---
+title: "main"
+output: html_document
+---
+
+### Step 0: Specify directories 
+```{r}
+library(tidyverse)
+source("../lib/functions.R")
+
+MS_train_dir <- "../data/Proj3_Data/MS_sample/data_train.csv"
+MS_test_dir <- "../data/Proj3_Data/MS_sample/data_test.csv"
+EM_train_dir <- "../data/Proj3_Data/eachmovie_sample/data_train.csv"
+EM_test_dir <- "../data/Proj3_Data/eachmovie_sample/data_test.csv"
+```
+
+# Step 1: Read in data and transform the data into UI matrix.
+
+```{r}
+MS_train <- read.csv(MS_train_dir, as.is = TRUE, header = TRUE)
+MS_train <- MS_train[, 2:4]
+
+MS_UI_matrix <- MS_data_transform(MS_train)
+save(MS_UI_matrix, file = "../output/MS_UI.RData")
+
+EM_train <- read.csv(EM_train_dir, as.is = TRUE, header = TRUE)
+EM_train <- EM_train[, 2:4]
+
+EM_UI_matrix <- movie_data_transform(EM_train)
+save(EM_UI_matrix, file = "../output/EM_UI.RData")
+
+### EM ratings is in scale of 5. Create a normalized matrix in scale of 1 for Mean-squared difference sim weights calculation.
+EM_UI_matrix_n <- EM_UI_matrix / 5
+
+```
+
+# Step 2: Model-based Algorithm
+
+# Step 3: Memory-based Algorithm
+
+## Similarity Weights
+
+Calculate similarity weights for EachMovie dataset.
+
+```{r}
+tm_pearson_EM <- NA
+tm_spearman_EM <- NA
+tm_cosine_EM <- NA
+tm_entropy_EM <- NA
+tm_msd_EM <- NA
+
+tm_pearson_EM <- system.time(EM_sim_pearson <- calc_weight(EM_UI_matrix, method = 'pearson'))
+#tm_spearman_EM <- system.time(EM_sim_spearman <- calc_weight(EM_UI_matrix, method = 'spearman'))
+tm_cosine_EM <- system.time(EM_sim_cosine <- calc_weight(EM_UI_matrix, method = 'cosine'))
+tm_entropy_EM <- system.time(EM_sim_entropy <- calc_weight(EM_UI_matrix, method = 'entropy'))
+tm_msd_EM <- system.time(EM_sim_msd <- calc_weight(EM_UI_matrix_n, method = 'msd'))
+
+save(EM_sim_pearson, file = "../output/EM_sim_pearson.RData")
+# save(EM_sim_spearman, file = "../output/EM_sim_spearman.RData")
+save(EM_sim_cosine, file = "../output/EM_sim_cosine.RData")
+save(EM_sim_entropy, file = "../output/EM_sim_entropy.RData")
+save(EM_sim_msd, file = "../output/EM_sim_msd.RData")
+
+```
+
+Report time used for calculating the weights.
+
+```{r}
+cat("For EachMovie Dataset: ")
+cat("Time for Pearson Correlation =", tm_pearson_EM[1], "s \n")
+cat("Time for Spearman Correlation =", tm_spearman_EM[1], "s \n")
+cat("Time for Cosine Vector Similarity =", tm_cosine_EM[1], "s \n")
+cat("Time for Mean-squared Difference =", tm_msd_EM[1], "s \n")
+```
+
+Run Predictions
+
+```{r}
+EM_pred_pearson <- pred_matrix(EM_UI_matrix, EM_sim_pearson)
+EM_pred_spearman <- pred_matrix(EM_UI_matrix, EM_sim_spearman)
+EM_pred_cosine <- pred_matrix(EM_UI_matrix, EM_sim_cosine)
+EM_pred_msd <- pred_matrix(EM_UI_matrix_n, EM_sim_msd) * 5
+EM_pred_entropy <- pred_matrix(EM_UI_matrix, EM_sim_entropy)
+
+save(EM_pred_pearson, file = "../output/EM_pred_pearson.RData")
+save(EM_pred_spearman, file = "../output/EM_pred_spearman.RData")
+save(EM_pred_cosine, file = "../output/EM_pred_cosine.RData")
+save(EM_pred_entropy, file = "../output/EM_pred_entropy.RData")
+save(EM_pred_msd, file = "../output/EM_pred_msd.RData")
+```
