@@ -103,12 +103,15 @@ calc_weight <- function(data, method = "pearson") {
   data       <- as.matrix(data)
   weight_mat <- matrix(NA, nrow = nrow(data), ncol = nrow(data))
   
+  
+  
   weight_func <- function(rowA, rowB) {
     
     # weight_func takes as input two rows (thought of as rows of the data matrix) and 
     # calculates the similarity between the two rows according to 'method'
     
     joint_values <- !is.na(rowA) & !is.na(rowB)
+    mod_I <- length(joint_values)
     if (sum(joint_values) == 0) {
       return(0)
     } else {
@@ -119,10 +122,24 @@ calc_weight <- function(data, method = "pearson") {
         return(cor(rowA[joint_values], rowB[joint_values], method = 'spearman'))
       }
       if (method == 'cosine') {
-        
+        return(sum(rowA*rowB)/sqrt(sum(rowA^2)*sum(rowB^2)))
       }
-      if (method == 'mse') {
-        
+      if (method == 'msd') {
+        ## this method assumes all entries in scale of 0-1. Use normalized matrices for this method.
+        ## https://ac.els-cdn.com/S0950705113003560/1-s2.0-S0950705113003560-main.pdf?_tid=fc704a89-11d3-45b5-b332-0a713076d429&acdnat=1523137722_9ff0c342bc4fe598519d0e49dbf7cf67
+        ## page. 158
+        return(1 - sum((rowA - rowB) ^ 2) / mod_I)
+      }
+      if (method == 'entropy') {
+        ## https://pdfs.semanticscholar.org/61f4/11eb2d5cb47f376f518aa6d3d49d8df3c6f2.pdf
+        wde <- 0
+        diff <- abs(rowA - rowB)
+        for (i in 1:length(diff)) {
+          p_di <- count(which(diff = diff[i])) / mod_I
+          wde <- wde - p_di*log(p_di)*diff[i]
+        }
+        wde <- wde / mod_I
+        return(wde)
       }
       if (method == 'simrank') {
         
