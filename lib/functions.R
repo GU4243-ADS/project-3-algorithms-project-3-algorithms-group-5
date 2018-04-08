@@ -132,11 +132,19 @@ calc_weight <- function(data, method = "pearson") {
       }
       if (method == 'entropy') {
         ## https://pdfs.semanticscholar.org/61f4/11eb2d5cb47f376f518aa6d3d49d8df3c6f2.pdf
+        ## Entropy calculation
         wde <- 0
-        diff <- abs(rowA - rowB)
+        diff <- abs(rowA[joint_values] - rowB[joint_values])
         for (i in 1:length(diff)) {
-          p_di <- count(which(diff = diff[i])) / mod_I
-          wde <- wde - p_di*log(p_di)*diff[i]
+          di <- diff[i]
+          count_di <- 0
+          for (j in 1:length(diff)){
+            if (di == diff[j]) {
+              count_di <- count_di + 1
+            }
+          }
+          p_di <- count_di / mod_I
+          wde <- wde - p_di*log(p_di)*di
         }
         wde <- wde / mod_I
         return(wde)
@@ -150,13 +158,19 @@ calc_weight <- function(data, method = "pearson") {
   # Loops over the rows and calculate sall similarities using weight_func
   for(i in 1:nrow(data)) {
     weight_mat[i, ] <- apply(data, 1, weight_func, data[i, ])
-    print(i)
+    # print(i)
   }
   return(round(weight_mat, 4))
 }
 
 
-
+normalize_entropy <- function(entropy_sim) {
+  for (i in 1:nrow(entropy_sim)) {
+    max_wde <- max(entropy_sim[i, ])
+    min_wde <- min(entropy_sim[i, ])
+    entropy_sim[i, ] <- (max_wde - entropy_sim[i, ]) / (max_wde - min_wde)
+  }
+}
 
 
 

@@ -29,8 +29,8 @@ EM_train <- EM_train[, 2:4]
 EM_UI_matrix <- movie_data_transform(EM_train)
 save(EM_UI_matrix, file = "../output/EM_UI.RData")
 
-### EM ratings is in scale of 5. Create a normalized matrix in scale of 1 for Mean-squared difference sim weights calculation.
-EM_UI_matrix_n <- EM_UI_matrix / 5
+### EM ratings is in scale of 6. Create a normalized matrix in scale of 1 for Mean-squared difference sim weights calculation.
+EM_UI_matrix_n <- EM_UI_matrix / 6
 
 ```
 
@@ -42,7 +42,7 @@ EM_UI_matrix_n <- EM_UI_matrix / 5
 
 Calculate similarity weights for EachMovie dataset.
 
-```{r}
+```{r, warning = FALSE}
 tm_pearson_EM <- NA
 tm_spearman_EM <- NA
 tm_cosine_EM <- NA
@@ -50,13 +50,14 @@ tm_entropy_EM <- NA
 tm_msd_EM <- NA
 
 tm_pearson_EM <- system.time(EM_sim_pearson <- calc_weight(EM_UI_matrix, method = 'pearson'))
-#tm_spearman_EM <- system.time(EM_sim_spearman <- calc_weight(EM_UI_matrix, method = 'spearman'))
+tm_spearman_EM <- system.time(EM_sim_spearman <- calc_weight(EM_UI_matrix, method = 'spearman'))
 tm_cosine_EM <- system.time(EM_sim_cosine <- calc_weight(EM_UI_matrix, method = 'cosine'))
+# need to normalize EM_sim_entropy across rows
 tm_entropy_EM <- system.time(EM_sim_entropy <- calc_weight(EM_UI_matrix, method = 'entropy'))
 tm_msd_EM <- system.time(EM_sim_msd <- calc_weight(EM_UI_matrix_n, method = 'msd'))
 
 save(EM_sim_pearson, file = "../output/EM_sim_pearson.RData")
-# save(EM_sim_spearman, file = "../output/EM_sim_spearman.RData")
+save(EM_sim_spearman, file = "../output/EM_sim_spearman.RData")
 save(EM_sim_cosine, file = "../output/EM_sim_cosine.RData")
 save(EM_sim_entropy, file = "../output/EM_sim_entropy.RData")
 save(EM_sim_msd, file = "../output/EM_sim_msd.RData")
@@ -71,6 +72,7 @@ cat("Time for Pearson Correlation =", tm_pearson_EM[1], "s \n")
 cat("Time for Spearman Correlation =", tm_spearman_EM[1], "s \n")
 cat("Time for Cosine Vector Similarity =", tm_cosine_EM[1], "s \n")
 cat("Time for Mean-squared Difference =", tm_msd_EM[1], "s \n")
+cat("Time for Entropy-based Method = ", tm_entropy_EM[1], "s \n")
 ```
 
 Run Predictions
@@ -79,7 +81,7 @@ Run Predictions
 EM_pred_pearson <- pred_matrix(EM_UI_matrix, EM_sim_pearson)
 EM_pred_spearman <- pred_matrix(EM_UI_matrix, EM_sim_spearman)
 EM_pred_cosine <- pred_matrix(EM_UI_matrix, EM_sim_cosine)
-EM_pred_msd <- pred_matrix(EM_UI_matrix_n, EM_sim_msd) * 5
+EM_pred_msd <- pred_matrix(EM_UI_matrix_n, EM_sim_msd) * 6
 EM_pred_entropy <- pred_matrix(EM_UI_matrix, EM_sim_entropy)
 
 save(EM_pred_pearson, file = "../output/EM_pred_pearson.RData")
@@ -89,3 +91,51 @@ save(EM_pred_entropy, file = "../output/EM_pred_entropy.RData")
 save(EM_pred_msd, file = "../output/EM_pred_msd.RData")
 ```
 
+Calculate similarity weights for Microsoft dataset.
+
+```{r, warning = FALSE}
+tm_pearson_MS <- NA
+tm_spearman_MS <- NA
+tm_cosine_MS <- NA
+tm_entropy_MS <- NA
+tm_msd_MS <- NA
+
+tm_pearson_MS <- system.time(MS_sim_pearson <- calc_weight(MS_UI_matrix, method = 'pearson'))
+tm_spearman_MS <- system.time(MS_sim_spearman <- calc_weight(MS_UI_matrix, method = 'spearman'))
+tm_cosine_MS <- system.time(MS_sim_cosine <- calc_weight(MS_UI_matrix, method = 'cosine'))
+tm_entropy_MS <- system.time(MS_sim_entropy <- calc_weight(MS_UI_matrix, method = 'entropy'))
+tm_msd_MS <- system.time(MS_sim_msd <- calc_weight(MS_UI_matrix_n, method = 'msd'))
+
+save(MS_sim_pearson, file = "../output/MS_sim_pearson.RData")
+save(MS_sim_spearman, file = "../output/MS_sim_spearman.RData")
+save(MS_sim_cosine, file = "../output/MS_sim_cosine.RData")
+save(MS_sim_entropy, file = "../output/MS_sim_entropy.RData")
+save(MS_sim_msd, file = "../output/MS_sim_msd.RData")
+```
+
+Report time used for calculating the weights.
+
+```{r}
+cat("For Microsoft Dataset: ")
+cat("Time for Pearson Correlation =", tm_pearson_MS[1], "s \n")
+cat("Time for Spearman Correlation =", tm_spearman_MS[1], "s \n")
+cat("Time for Cosine Vector Similarity =", tm_cosine_MS[1], "s \n")
+cat("Time for Mean-squared Difference =", tm_msd_MS[1], "s \n")
+cat("Time for Entropy-based Method = ", tm_entropy_MS[1], "s \n")
+```
+
+Run Predictions
+
+```{r}
+MS_pred_pearson <- pred_matrix(MS_UI_matrix, MS_sim_pearson)
+MS_pred_spearman <- pred_matrix(MS_UI_matrix, MS_sim_spearman)
+MS_pred_cosine <- pred_matrix(MS_UI_matrix, MS_sim_cosine)
+MS_pred_msd <- pred_matrix(MS_UI_matrix_n, MS_sim_msd) * 6
+MS_pred_entropy <- pred_matrix(MS_UI_matrix, MS_sim_entropy)
+
+save(MS_pred_pearson, file = "../output/MS_pred_pearson.RData")
+save(MS_pred_spearman, file = "../output/MS_pred_spearman.RData")
+save(MS_pred_cosine, file = "../output/MS_pred_cosine.RData")
+save(MS_pred_entropy, file = "../output/MS_pred_entropy.RData")
+save(MS_pred_msd, file = "../output/MS_pred_msd.RData")
+```
