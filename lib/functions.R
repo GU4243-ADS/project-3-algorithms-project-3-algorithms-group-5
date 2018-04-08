@@ -194,10 +194,66 @@ calc_simrank_weight <- function(data) {
     # update s_user
     for (i in 1:nrow(data)){
       for (j in 1:nrow(data)){
-        i_list <- data[i, which(!data == 0)]
-        j_list <- data[j, which(!data == 0)]
+        i_list <- data[i,]
+        j_list <- data[j,]
+        i_list <- i_list[which(i_list != 0)]
+        j_list <- j_list[which(j_list != 0)]
         N_i <- length(i_list)
         N_j <- length(j_list)
+        s_user[i, j] <- C_1 / (N_i * N_j) * sum(s_item[i_list, j_list])
+      }
+      print(i)
+    }
+    print("iter ", K, " s_user complete")
+    
+    for (i in 1:ncol(data)){
+      for (j in 1:ncol(data)){
+        i_list <- data[,i]
+        j_list <- data[,j]
+        i_list <- i_list[which(i_list != 0)]
+        j_list <- j_list[which(j_list != 0)]
+        N_i <- length(i_list)
+        N_j <- length(j_list)
+        s_item[i, j] <- C_2 / (N_i * N_j) * sum(s_user[i_list, j_list])
+      }
+      print(i)
+    }
+    print("iter ", K, " s_item complete")
+  }
+  
+  return(round(s_user, 4))
+}
+
+calc_simrankpp_weight <- function(data) {
+  
+  C_1 <- 0.8
+  C_2 <- 0.8
+  # initialization
+  data <- as.matrix(data)
+  s_user <- matrix(0, nrow = nrow(data), ncol = nrow(data))
+  s_item <- matrix(0, nrow = ncol(data), ncol = ncol(data))
+  # assign diagonal to be 1
+  for (i in 1:nrow(s_user)) {
+    s_user[i,i] <- 1
+  }
+  for (i in 1:nrow(s_item)) {
+    s_item[i,i] <- 1
+  }
+  
+  # K = 5
+  K = 5
+  for (i in 1:K) {
+    # update s_user
+    for (i in 1:nrow(data)){
+      for (j in 1:nrow(data)){
+        i_list <- !is.na(data[i,])
+        j_list <- !is.na(data[j,])
+        mod_I <- length(i_list & j_list)
+        norm_f <- function(x) {
+          return(x/sum(x))
+        }
+        norm_wi <- sapply(data[i,], norm_f)
+        norm_wj <- sapply(data[j,], norm_f)
         s_user[i, j] <- C_1 / (N_i * N_j) * sum(s_item[i_list, j_list])
       }
     }
@@ -208,14 +264,14 @@ calc_simrank_weight <- function(data) {
         j_list <- data[which(!data == 0), j]
         N_i <- length(i_list)
         N_j <- length(j_list)
+        v_
         s_item[i, j] <- C_2 / (N_i * N_j) * sum(s_user[i_list, j_list])
       }
     }
   }
   
+  return(round(s_user, 4))
 }
-
-
 
 pred_matrix <- function(data, simweights) {
   

@@ -99,18 +99,21 @@ tm_spearman_MS <- NA
 tm_cosine_MS <- NA
 tm_entropy_MS <- NA
 tm_msd_MS <- NA
+tm_simrank_MS <- NA
 
 tm_pearson_MS <- system.time(MS_sim_pearson <- calc_weight(MS_UI_matrix, method = 'pearson'))
 tm_spearman_MS <- system.time(MS_sim_spearman <- calc_weight(MS_UI_matrix, method = 'spearman'))
 tm_cosine_MS <- system.time(MS_sim_cosine <- calc_weight(MS_UI_matrix, method = 'cosine'))
 tm_entropy_MS <- system.time(MS_sim_entropy <- calc_weight(MS_UI_matrix, method = 'entropy'))
 tm_msd_MS <- system.time(MS_sim_msd <- calc_weight(MS_UI_matrix, method = 'msd'))
+tm_simrank_MS <- system.time(MS_sim_simr <- calc_simrank_weight(MS_UI_matrix))
 
 save(MS_sim_pearson, file = "../output/MS_sim_pearson.RData")
 save(MS_sim_spearman, file = "../output/MS_sim_spearman.RData")
 save(MS_sim_cosine, file = "../output/MS_sim_cosine.RData")
 save(MS_sim_entropy, file = "../output/MS_sim_entropy.RData")
 save(MS_sim_msd, file = "../output/MS_sim_msd.RData")
+save(MS_sim_simr, file = "../output/MS_sim_simr.RData")
 ```
 
 Report time used for calculating the weights.
