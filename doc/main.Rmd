@@ -104,7 +104,7 @@ tm_pearson_MS <- system.time(MS_sim_pearson <- calc_weight(MS_UI_matrix, method 
 tm_spearman_MS <- system.time(MS_sim_spearman <- calc_weight(MS_UI_matrix, method = 'spearman'))
 tm_cosine_MS <- system.time(MS_sim_cosine <- calc_weight(MS_UI_matrix, method = 'cosine'))
 tm_entropy_MS <- system.time(MS_sim_entropy <- calc_weight(MS_UI_matrix, method = 'entropy'))
-tm_msd_MS <- system.time(MS_sim_msd <- calc_weight(MS_UI_matrix_n, method = 'msd'))
+tm_msd_MS <- system.time(MS_sim_msd <- calc_weight(MS_UI_matrix, method = 'msd'))
 
 save(MS_sim_pearson, file = "../output/MS_sim_pearson.RData")
 save(MS_sim_spearman, file = "../output/MS_sim_spearman.RData")
@@ -130,7 +130,7 @@ Run Predictions
 MS_pred_pearson <- pred_matrix(MS_UI_matrix, MS_sim_pearson)
 MS_pred_spearman <- pred_matrix(MS_UI_matrix, MS_sim_spearman)
 MS_pred_cosine <- pred_matrix(MS_UI_matrix, MS_sim_cosine)
-MS_pred_msd <- pred_matrix(MS_UI_matrix_n, MS_sim_msd) * 6
+MS_pred_msd <- pred_matrix(MS_UI_matrix, MS_sim_msd)
 MS_pred_entropy <- pred_matrix(MS_UI_matrix, MS_sim_entropy)
 
 save(MS_pred_pearson, file = "../output/MS_pred_pearson.RData")
