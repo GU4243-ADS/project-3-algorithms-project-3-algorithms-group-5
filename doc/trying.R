@@ -150,16 +150,30 @@ EM_for_CF<- function(data, C, t=0.001){
   return(list(mu=mu, gamma_array=gamma_array, aic_assignment=aic_assignment,aic_assignment_old=aic_assignment_old))
 }  
 
-system.time(results<-EM_for_CF(movie_UI,9))
-save(results,file = "EM_9.RData")
+system.time(results<-EM_for_CF(movie_UI,11))
+save(results,file = "EM_11.RData")
 
 
 
 
 ##Pred value
+movie_EM_pred<-function(gamma,aic){
+  pred<-matrix(NA,nrow=dim(aic)[1],ncol=dim(gamma)[1])
+  cluster_of_user<-apply(aic, 1, which.max)
+  rate<-c(1:dim(gamma)[2])
+  for (i in 1:dim(aic)[1]) {
+    for (j in 1:dim(gamma)[1]) {
+      pred[i,j]<-sum(gamma[j,,cluster_of_user[i]]*rate)
+    }
+  }
+  return(movie_EM_pred=pred)
+}
 
-movie_EM3_pred<-matrix()
-  
+movie_EM_pred_11 <- movie_EM_pred(results$gamma_array,results$aic_assignment)
+# movie_EM_pred_11[1:10,1:10]
+save(movie_EM_pred_11,file = "movie_EM_pred_11.RData")
+
+
   
   
 
