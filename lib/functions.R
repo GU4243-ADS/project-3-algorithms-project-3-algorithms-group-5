@@ -122,13 +122,13 @@ calc_weight <- function(data, method = "pearson") {
         return(cor(rowA[joint_values], rowB[joint_values], method = 'spearman'))
       }
       if (method == 'cosine') {
-        return(sum(rowA*rowB)/sqrt(sum(rowA^2)*sum(rowB^2)))
+        return(sum(rowA[joint_values], rowB[joint_values])/sqrt(sum(rowA[joint_values]^2)*sum(rowB[joint_values]^2)))
       }
       if (method == 'msd') {
         ## this method assumes all entries in scale of 0-1. Use normalized matrices for this method.
         ## https://ac.els-cdn.com/S0950705113003560/1-s2.0-S0950705113003560-main.pdf?_tid=fc704a89-11d3-45b5-b332-0a713076d429&acdnat=1523137722_9ff0c342bc4fe598519d0e49dbf7cf67
         ## page. 158
-        return(1 - sum((rowA - rowB) ^ 2) / mod_I)
+        return(1 - sum((rowA[joint_values] - rowB[joint_values]) ^ 2) / mod_I)
       }
       if (method == 'entropy') {
         ## https://pdfs.semanticscholar.org/61f4/11eb2d5cb47f376f518aa6d3d49d8df3c6f2.pdf
@@ -158,7 +158,7 @@ calc_weight <- function(data, method = "pearson") {
   # Loops over the rows and calculate sall similarities using weight_func
   for(i in 1:nrow(data)) {
     weight_mat[i, ] <- apply(data, 1, weight_func, data[i, ])
-    # print(i)
+    print(i)
   }
   return(round(weight_mat, 4))
 }
@@ -170,6 +170,49 @@ normalize_entropy <- function(entropy_sim) {
     min_wde <- min(entropy_sim[i, ])
     entropy_sim[i, ] <- (max_wde - entropy_sim[i, ]) / (max_wde - min_wde)
   }
+}
+
+calc_simrank_weight <- function(data) {
+  
+  C_1 <- 0.8
+  C_2 <- 0.8
+  # initialization
+  data <- as.matrix(data)
+  s_user <- matrix(0, nrow = nrow(data), ncol = nrow(data))
+  s_item <- matrix(0, nrow = ncol(data), ncol = ncol(data))
+  # assign diagonal to be 1
+  for (i in 1:nrow(s_user)) {
+    s_user[i,i] <- 1
+  }
+  for (i in 1:nrow(s_item)) {
+    s_item[i,i] <- 1
+  }
+  
+  # K = 5
+  K = 5
+  for (i in 1:K) {
+    # update s_user
+    for (i in 1:nrow(data)){
+      for (j in 1:nrow(data)){
+        i_list <- data[i, which(!data == 0)]
+        j_list <- data[j, which(!data == 0)]
+        N_i <- length(i_list)
+        N_j <- length(j_list)
+        s_user[i, j] <- C_1 / (N_i * N_j) * sum(s_item[i_list, j_list])
+      }
+    }
+    
+    for (i in 1:ncol(data)){
+      for (j in 1:ncol(data)){
+        i_list <- data[which(!data == 0), i]
+        j_list <- data[which(!data == 0), j]
+        N_i <- length(i_list)
+        N_j <- length(j_list)
+        s_item[i, j] <- C_2 / (N_i * N_j) * sum(s_user[i_list, j_list])
+      }
+    }
+  }
+  
 }
 
 
