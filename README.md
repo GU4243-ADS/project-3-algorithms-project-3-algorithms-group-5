@@ -37,6 +37,12 @@ There are some improvements we can make in the future to gain a better accuracy 
 
 
 ### Memory-based Algorithm
+Memory-based algorithm is user-based neighborhood model, using various components for similarity weight.
+1. Pearson’s correlation
+2. Spearman’s correlation
+3. Vector(cosine) similarity
+4. Entropy
+5. SimRank 
 
 ### Evaluation
 For the purposes of our evaluation, we used the Mean Absolute Error and the Root Mean Square Error. For both values, the smaller the value, the more accurate our predictions are.
