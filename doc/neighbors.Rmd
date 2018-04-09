@@ -167,6 +167,23 @@ for (i in 1:ncol(movie_corr0.1_nnbors40)){
 #set the diagonals back to 1
 diag(test) <- 1
 movie_corr0.1_nnbors40 <- test
+
+# 60 neighbors
+movie_corr0.1_nnbors60 <- matrix(movie_sim, ncol = dim(movie_sim)[1])
+movie_corr0.1_nnbors60[abs(movie_corr0.1_nnbors60) < 0.1] <- 0
+
+#temporarily set the diagonals to NA while we find highest correlations; otherwise, the highest correlated in any row will be 1.
+diag(movie_corr0.1_nnbors60) <- NA
+test <- matrix(0, ncol = dim(movie_sim)[1], nrow = dim(movie_sim)[1])
+
+for (i in 1:ncol(movie_corr0.1_nnbors60)){
+  temp <- nlargest(movie_corr0.1_nnbors60, 60, i)[, 1]
+  test[temp, i] <- movie_corr0.1_nnbors60[temp, i]
+}
+
+#set the diagonals back to 1
+diag(test) <- 1
+movie_corr0.1_nnbors60 <- test
 ```
 
 ### Step 4: Get the prediction matrix for all filtered datasets
@@ -194,6 +211,7 @@ movie_corr0.4_pred <- pred_matrix(movie_UI, movie_corr0.4)
 movie_corr0.5_pred <- pred_matrix(movie_UI, movie_corr0.5)
 movie_corr0.1_nnbors20_pred <- pred_matrix(movie_UI, movie_corr0.1_nnbors20)
 movie_corr0.1_nnbors40_pred <- pred_matrix(movie_UI, movie_corr0.1_nnbors40)
+movie_corr0.1_nnbors60_pred <- pred_matrix(movie_UI, movie_corr0.1_nnbors60)
 ```
 
 ### Step 5: Get the MAE for the different neighborhood selections
@@ -244,6 +262,9 @@ movieres <- data.frame(moviemae, moviermse)
 names(movieres)[1] <- "MAE"
 names(movieres)[2] <- "RMSE"
 setattr(movieres, "row.names", c("Min Abs Corr = 0.1", "Min Abs Corr = 0.2", "Min Abs Corr = 0.3", "Min Abs Corr = 0.4", "Min Abs Corr = 0.5", "Min Abs Corr = 0.1, NNbors = 20", "Min Abs Corr = 0.1, NNbors = 40"))
+
+MSres
+movieres
 ```
 
 
