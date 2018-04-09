@@ -23,8 +23,10 @@ packages <- lapply(packages, FUN = function(x) {
 load("/Users/miezai/Documents/GitHub/project-3-algorithms-project-3-algorithms-group-5/data/EM_pred_entropy.RData")
 load("/Users/miezai/Documents/GitHub/project-3-algorithms-project-3-algorithms-group-5/data/EM_UI_test.RData")
 load("/Users/miezai/Documents/GitHub/project-3-algorithms-project-3-algorithms-group-5/data/movie_pred.RData")
+load("/Users/miezai/Documents/GitHub/project-3-algorithms-project-3-algorithms-group-5/data/MS_pred.RData")
+load("/Users/miezai/Documents/GitHub/project-3-algorithms-project-3-algorithms-group-5/data/MS_test.RData")
 
-pred = movie_pred
+pred = EM_pred_spearman
 test = movie_UI_test
 
 pred_MS = MS_pred
@@ -32,7 +34,6 @@ test_MS = MS_test
 
 source("../lib/evaluation.R")
 ```
-
 
 ### Evaluation 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}

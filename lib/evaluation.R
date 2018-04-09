@@ -56,47 +56,60 @@ eva_rmse <- function(prediction, test_data){
 #output: rank scoring
 rank_scoring <- function(pred, test, alpha = 5){
   
-  # select test equals to 1
-  to_test <- function(test){
-    which(test == 1)
-  }
-  # to rank prediction 
-  ranked <- function(pred){
-    order(pred ,decreasing = TRUE)
-  }
+  #create empty matrix Ra
+  Ra <- matrix()
+  RaMax <- matrix()
   
-  # apply it into matrix
-  to_check_test <- apply(test, 1, to_test)
+  #get max achievable utility
+  to_check_test <- apply(test, 1, check_to_test)
+  
+  #we need get the index of j(ranked matrix)
   ranked_pred <- t(apply(pred, 1, ranked)) 
   
-  #matrix_d = matrix()
-  #adjust <- ifelse(pred - 0 > 0, pred - 0, 0)
-  
-  r_a <- matrix()
-  r_a_max <- matrix()
-  
-  # create a loop to calculate Ra and maxRa seperately
+  # Create a loop to calculate Ra and maxRa seperately
   for(i in 1:nrow(test)){
     
-    index_by_pred <- ranked_pred[i,]
-    denominator <-  2^((index_by_pred-1)/(5-1))
+    index <- ranked_pred[i,]
+    denominator <-  2^((index - 1)/(alpha - 1))
     adjust <- ifelse(pred[i,] - 0 > 0 , pred[i,] - 0 , 0)
+    #max(Va,j - d, 0) To removie unavailable items
     
-    r_a[i] <- sum( adjust / denominator )
-    r_a_max[i] <- length(to_check_test[[i]])
-    
+    Ra[i] <- sum(adjust / denominator)
+    RaMax[i] <- length(to_check_test[[i]])
   }
   
+  #At first, I wanna only calculate the denominator into a matrix by a loop, but it fails..(I don't know why :() So I put all(Ra and MaxRa) into the loop)
+  #matrix_d = matrix()
+  #loop{....}
   #matrix_d <- matrix_d[-1]
+  #adjust <- ifelse(pred - 0 > 0, pred - 0, 0)
   #utility <- adjust/matrix_d
   #r_a <- rowSums(utility)
   
-  R <- 100*(sum(r_a)/sum(r_a_max))
+  R <- 100*(sum(Ra)/sum(RaMax))
   return(R)
 }
 
+## Helper Function
 
-###Helper functoin
+#check_to_test
+#Input: test matrix
+#Output: A matrix
+#this function would help us to get the sieze of the test size(in RS, we use length() to get the maximum achievable utility)
+check_to_test <- function(test){
+    which(test == 1)
+}
+
+
+#ranked
+#Input: pred matrix
+#Output: Ordered matrix
+#In roder to get index of j in Va,j, we need get a ranked matrix
+ranked <- function(pred){
+  order(pred ,decreasing = TRUE)
+}
+
+
 #In final version, I give up this function
 #ranked prediction by test
 #input: predictoin data, test data
