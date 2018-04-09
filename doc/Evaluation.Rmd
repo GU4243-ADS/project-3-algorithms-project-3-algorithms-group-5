@@ -33,7 +33,7 @@ colnames(MS_EM_pred_9) <- colnames(MS_UI_matrix)
 rownames(MS_EM_pred_9) <- rownames(MS_UI_matrix)
 
 
-pred <- MS_pred_cosine
+pred <- MS_EM_pred_9
 test <- MS_test
 ```
 
@@ -54,6 +54,4 @@ eva_rmse(pred, test)
 ```{r message=FALSE, warning=FALSE}
 rank_scoring(pred, test, 5)
 ```
-
-
 

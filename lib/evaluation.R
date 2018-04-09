@@ -61,24 +61,45 @@ ranks <- function(pred, test){
   return(matrix_ranks)
 }
 
-rank_s <- function(pred, test,a){
-  sorted_test <- as.matrix(ranks(pred,test))
-  adjs_test <- max(sorted_test, 0)
+rank_scoring <- function(pred, test, alpha){
   
-  matrix_d = matrix()
-  for (j in (1:ncol(sorted_test))){
-    denominator = 2^((j-1)/(a-1))
-    matrix_d <- cbind(matrix_d, denominator)
+  # select test equals to 1
+  to_test <- function(test){
+    which(test == 1)
   }
   
-  matrix_d <- matrix_d[,-1]
+  # to rank prediction 
+  ranked <- function(pred){
+    order(pred ,decreasing = TRUE)
+  }
   
-  r_a <- sorted_test/matrix_d
-  r_a_sum <- rowSums(r_a)
+  # apply it into matrix
+  to_check_test <- apply(test, 1, to_test)
+  ranked_pred <- t(apply(pred, 1, ranked)) 
   
-  r_a_max = t(apply(sorted_test, 1, sort,decreasing=T)) / matrix_d
-  r_a_max_sum <- rowSums(r_a_max)
+  #matrix_d = matrix()
+  #adjust <- ifelse(pred - 0 > 0, pred - 0, 0)
   
-  r = 100*(sum(r_a_sum)/sum(r_a_max_sum))
-  return(r)
+  
+  r_a <- matrix()
+  r_a_max <- matrix()
+  
+  for(i in 1:nrow(test)){
+    
+    index_by_pred <- ranked_pred[i,]
+    denominator <-  2^((index_by_pred-1)/(5-1))
+    adjust <- ifelse(pred[i,] - 0 > 0 , pred[i,] - 0 , 0)
+    
+    r_a[i] <- sum( adjust / denominator )
+    r_a_max[i] <- length(to_check_test[[i]])
+    
+  }
+  #matrix_d <- matrix_d[-1]
+  
+  #utility <- adjust/matrix_d
+  #r_a <- rowSums(utility)
+  
+  
+  R <- 100*(sum(r_a)/sum(r_a_max))
+  return(R)
 }
