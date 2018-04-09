@@ -1,10 +1,15 @@
+
+
 eva_mae <- function(prediction,test_data){
   matrix_mae <- matrix(ncol = 2)
   for (i in 1:nrow(test_data)){
-    cols_to_test <- which(!is.na(test_data[i, ]))
-    pred  <- prediction[i, ]
+    preds  <- prediction[i, ]
+    tests <- test_data[i,]
+    all <- cbind(preds,tests)
+    all <- na.omit(all)
+    all <- as.data.frame(all)
     
-    mae <- MAE(cols_to_test,pred)
+    mae <- MAE(all$preds,all$tests)
     
     labels <- cbind(i, mae)
     matrix_mae <- rbind(matrix_mae,labels)
@@ -19,10 +24,13 @@ eva_mae <- function(prediction,test_data){
 eva_rmse <- function(prediction, test_data){
   matrix_rmse <- matrix(ncol = 2)
   for (i in 1:nrow(test_data)){
-    cols_to_test <- which(!is.na(test_data[i, ]))
-    pred  <- prediction[i, ]
+    preds  <- prediction[i, ]
+    tests <- test_data[i,]
+    all <- cbind(preds,tests)
+    all <- na.omit(all)
+    all <- as.data.frame(all)
     
-    RMSE <- rmse(cols_to_test,pred)
+    RMSE <- rmse(all$tests, all$preds)
     
     labels <- cbind(i, RMSE)
     matrix_rmse <- rbind(matrix_rmse,labels)
@@ -32,6 +40,16 @@ eva_rmse <- function(prediction, test_data){
   evaluation = sum(matrix_rmse[,2])/i
   
   return(evaluation)
+}
+
+###rank test metrics by pred
+ranks <- function(pred, test){
+  matrix_ranks <- matrix(ncol = pred, nrow = test)
+  
+  for (i in 2:nrow(pred)){
+    rank_pred <- sort(pred[i,], decrasing = TRUE)
+    rank_test_by_pred <- test[i,][names(rank_pred)]
+  }
 }
 
 RS <- function(pred, test){
@@ -46,7 +64,7 @@ RS <- function(pred, test){
   for (i in 2:nrow(rs)){
     p <- rs[i,2] - rs[i,3]
     p <- max(p,0) 
-    denominator <- (i - 1) * (5 - 1)# set a = 5
+    denominator <- (i - 1) / (5 - 1)# set a = 5
     p <- p / denominator
     total = total + p
     if (is.na(total)){
@@ -70,3 +88,4 @@ eva_rs <- function(prediction, test_data){
   }
   return(matrix_rs)
 }
+

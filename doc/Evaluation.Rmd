@@ -25,6 +25,9 @@ load("/Users/miezai/Documents/GitHub/project-3-algorithms-project-3-algorithms-g
 load("/Users/miezai/Documents/GitHub/project-3-algorithms-project-3-algorithms-group-5/data/movie_pred.RData")
 load("/Users/miezai/Documents/GitHub/project-3-algorithms-project-3-algorithms-group-5/data/MS_pred.RData")
 
+load("/Users/miezai/Documents/GitHub/project-3-algorithms-project-3-algorithms-group-5/data/movie_EM_pred_11.RData")
+load("/Users/miezai/Documents/GitHub/project-3-algorithms-project-3-algorithms-group-5/data/MS_EM_pred_9.RData")
+
 ```
 
 
@@ -34,24 +37,36 @@ source("/Users/miezai/Documents/GitHub/project-3-algorithms-project-3-algorithms
 
 #select part of matrix
 
-pred <- movie_pred[,1:100]
+pred <- movie_EM_pred_11[,1:100]
 test <- movie_UI_test[,1:100]
 
-pred_MS <- MS_pred[,1:100]
-test_MS <- MS_UI[,1:100]
+pred_MS <- MS_EM_pred_9
+test_MS <- MS_UI
 
 #I don't evaluate the whole dataset.. 
 #Feel free generate evaluations of the whole metrics, but I just wanna make you guys know this is not the final version of evaluation..
+
+matrix_ranks <- matrix(NA, ncol(test), nrow(test))
+for (i in 1:nrow(pred)){
+    rank_pred <- pred[i,] %>% as.data.frame()
+    rank_pred <- rank_pred %>% mutate(id = row.names(rank_pred)) %>% arrange(desc(.)) %>% mutate(rank = 1:nrow(rank_pred))
+    rank_test_by_pred <- test[i,] %>% as.data.frame()
+    rank_test_by_pred <- rank_test_by_pred %>% mutate(id = row.names(rank_test_by_pred))
+    names(rank_test_by_pred) <- c("test","id")
+    all <- merge(rank_pred, rank_test_by_pred) 
+    all <- all %>% arrange(rank)
+    matrix_ranks[i,] <- all$test
+  } 
 ```
 
 ```{r message=FALSE, warning=FALSE}
 #MAE
-eva_mae(pred, test)
+eva_mae(pred_MS,test_MS)
 ```
 
 ```{r message=FALSE, warning=FALSE}
 #RMSE
-eva_rmse(pred,test)
+eva_rmse(pred_MS,test_MS)
 ```
 
 

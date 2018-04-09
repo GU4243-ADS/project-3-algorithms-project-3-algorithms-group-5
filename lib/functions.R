@@ -181,3 +181,4 @@ pred_matrix <- function(data, simweights) {
   
   return(pred_mat)
 }
+
