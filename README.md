@@ -21,6 +21,21 @@ We calculated similarity weights for each of the datasets using the Pearson, Spe
 
 ### Model-based Algorithm
 
+Since memory-based algorithm is not always as fast and scalable as we expected, especially when we need to generate real-time recommendations on the basis of very large datasets. To achieve these goals, model-based recommendation systems are used.
+From a probabilistic perspective, CF can be viewed as calculating the expected value given what we know(Bayes used). Our model-based algorithm are developed using cluster method(EM algorithm) to learn parameters for a model structure with a fixed number of classes. 
+
+We set the group number as 11 and 9 for movie & MS dataset respectively, got the probability of user i in cluster c (A[i,c]); probability of j rated k in cluster c (Gamma). (take movie dataset as example) and evaluated the results through MAE & RMSE. 
+
+There are some improvements we can make in the future to gain a better accuracy for the EM algorithm.
+
+1. Use CV to set the cluster number
+
+2. Run more than once with different initial number & choose results through MLE
+
+3. Change convergence criterion to gain a more accurate prediction.
+ 
+
+
 ### Memory-based Algorithm
 
 ### Evaluation
