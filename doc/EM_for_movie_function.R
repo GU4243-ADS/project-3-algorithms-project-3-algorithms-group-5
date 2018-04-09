@@ -1,34 +1,3 @@
-for (i in 1:length(ms_mu)){
-  clusterlist[[i]]<-sample_ms_ui[ms.df2[,"ms_kmeans_cluster"]==i,]
-  for (j in 1:nrow(clusterlist[[i]])){
-    for (k in 1:ncol(sample_ms_ui)){
-      
-      ################ numerator first ###########################
-      #MS only has 2 possiblities 0 & 1
-      each_value<-clusterlist[[i]][j,k]
-      #sum of colum which has the same value with selected
-      j_pro_matrix[j,k]<-sum(clusterlist[[i]][,k] ==each_value)
-      
-      #cal each probality for user j in each column k for cluster i
-      a_vector[j,k] <- j_pro_matrix[j,k]/nrow(clusterlist[[i]]) #sum(ms_kmeans_cluster==i)
-      
-      #contiue multiply 
-      pi_gamma[j]<-prod(a_vector[j,]) 
-      numerator[j,i]<-ms_mu[i]*pi_gamma[j]
-      
-      ############ start calculate denominator ###################
-      #seems like the sum of numerator???
-      
-    }
-  }
-}
-
-
-##evaluation 
-##MAE
-
-
-
 install.packages("matrixStats")
 library(matrixStats)
 
@@ -78,8 +47,8 @@ EM_for_CF<- function(data, C, t=0.001){
   # set convergence criterion
   iter <-1  
   convergence_t <-1
-  
-  while (iter < 12 & convergence_t > t ) {
+  ##
+  while ( iter < 12 & convergence_t > t ) {
     aic_assignment_old<- aic_assignment
     
     # E-step
@@ -150,12 +119,6 @@ EM_for_CF<- function(data, C, t=0.001){
   return(list(mu=mu, gamma_array=gamma_array, aic_assignment=aic_assignment,aic_assignment_old=aic_assignment_old))
 }  
 
-system.time(results<-EM_for_CF(movie_UI,11))
-save(results,file = "EM_11.RData")
-
-
-
-
 ##Pred value
 movie_EM_pred<-function(gamma,aic){
   pred<-matrix(NA,nrow=dim(aic)[1],ncol=dim(gamma)[1])
@@ -169,8 +132,10 @@ movie_EM_pred<-function(gamma,aic){
   return(movie_EM_pred=pred)
 }
 
+
+system.time(results<-EM_for_CF(movie_UI,11))
+save(results,file = "EM_11.RData")
 movie_EM_pred_11 <- movie_EM_pred(results$gamma_array,results$aic_assignment)
-# movie_EM_pred_11[1:10,1:10]
 save(movie_EM_pred_11,file = "movie_EM_pred_11.RData")
 
 
@@ -179,26 +144,8 @@ save(movie_EM_pred_11,file = "movie_EM_pred_11.RData")
 
 
 
-a<-matrix(3,3,6)
-b<-matrix(3,6,2)
 
-# Matrix multiply
-system.time(mat_ans<-a%*%b) 
-mat_ans<-a%*%b
 
-# Loop
-loop_ans<-matrix(0,3,2)
-system.time(
-  for (i in 1:nrow(a)) {
-    for (j in 1:ncol(b)) {
-      loop_ans[i,j]<-sum(a[i,]*b[,j])
-    }
-  }
-)
-
-loop_ans==mat_ans
-  
-  
 
 
 
