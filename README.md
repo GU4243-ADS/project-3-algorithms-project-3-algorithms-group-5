@@ -44,10 +44,18 @@ Memory-based algorithm is user-based neighborhood model, using various component
 4. Entropy: For each row in sim weights: w(i, j) = max(w(i, )) - w(i, j) / max(w(i, )) - min(w(i, ))
 5. SimRank: Only ran SimRank on MS data
 
+Time Used on Sim-Weight Matrices (Movie)
+![Time](time_using.png)
 
 
 ### Evaluation
 For EM dataset, we used the Mean Absolute Error and the Root Mean Square Error. For both values, the smaller the value, the more accurate our predictions are. For MS dataset, which can give us a ordered list of recommendations, we used Rank Scoring Evaluation. 
+
+Memory-Based Algorithm(MS) Evaluation
+![MS](MS.png)
+
+Memory-Based Algorithm(Movie) 
+![MS](EM.png)
 
 ### Neighborhood Selection
 For the purposes of our neighborhood selection, we tried filtering the data by minimum threshold only, and then by the nearest number of neighbors. For both the EM data and the MS data, we tried a minimum threshold of 0.1, 0.2, 0.3, 0.4, 0.5. We did this filtering by setting all the similarity weights under the desired weights to 0.
