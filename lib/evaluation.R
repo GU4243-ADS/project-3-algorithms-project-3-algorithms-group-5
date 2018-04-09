@@ -44,48 +44,42 @@ eva_rmse <- function(prediction, test_data){
 
 ###rank test metrics by pred
 ranks <- function(pred, test){
-  matrix_ranks <- matrix(ncol = pred, nrow = test)
+  matrix_ranks <- matrix(NA)
+  for (i in 1:ncol(pred)){
+    rank_pred <- pred[,i] %>% as.data.frame()
+    rank_pred <- rank_pred %>% mutate(id = row.names(rank_pred)) %>% arrange(desc(.)) %>% mutate(rank = 1:nrow(rank_pred))
+    rank_test_by_pred <- test[,i] %>% as.data.frame()
+    rank_test_by_pred <- rank_test_by_pred %>% mutate(id = row.names(rank_test_by_pred))
+    names(rank_test_by_pred) <- c("test","id")
+    all <- merge(rank_pred, rank_test_by_pred) 
+    all <- all %>% arrange(rank) %>% select(test)
+    names(all) <- i
+    matrix_ranks <- cbind(matrix_ranks,all)
+    print(i)
+  } 
+  matrix_ranks <- matrix_ranks[-1]
   
-  for (i in 2:nrow(pred)){
-    rank_pred <- sort(pred[i,], decrasing = TRUE)
-    rank_test_by_pred <- test[i,][names(rank_pred)]
-  }
+  return(matrix_ranks)
 }
 
-RS <- function(pred, test){
-  pred = MS_pred[,1]
-  test = MS_UI[,1]
-  pred <- as.data.frame(pred)
-  test <- as.data.frame(test)
-  pred$id <- row.names(pred)
-  test$id <- row.names(test)
-  rs <- merge(pred,test)
-  total = 0
-  for (i in 2:nrow(rs)){
-    p <- rs[i,2] - rs[i,3]
-    p <- max(p,0) 
-    denominator <- (i - 1) / (5 - 1)# set a = 5
-    p <- p / denominator
-    total = total + p
-    if (is.na(total)){
-      print(i)
-      break
-    }
+rank_scoring <- function(pred, test,a){
+  sorted_test <- as.matrix(ranks(pred,test))
+  adjs_test <- max(sorted_test, 0)
+  
+  matrix_d = matrix()
+  for (j in (1:ncol(sorted_test))){
+    denominator = 2^((j-1)/(a-1))
+    matrix_d <- cbind(matrix_d, denominator)
   }
-  return(total)
+  
+  matrix_d <- matrix_d[,-1]
+  
+  r_a <- sorted_test/matrix_d
+  r_a_sum <- rowSums(r_a)
+  
+  r_a_max = t(apply(sorted_test, 1, sort,decreasing=T)) / matrix_d
+  r_a_max_sum <- rowSums(r_a_max)
+  
+  r = 100*(sum(r_a_sum)/sum(r_a_max_sum))
+  return(r)
 }
-
-eva_rs <- function(prediction, test_data){
-  matrix_rs <- matrix(ncol = 2)
-  for (i in 1:nrow(test_data)){
-    cols_to_test <- which(!is.na(test_data[i, ]))
-    pred  <- prediction[i, ]
-    
-    rs <- RS(pred, cols_to_test)
-    
-    labels <- cbind(i, rs)
-    matrix_rs <- rbind(matrix_rs,labels)
-  }
-  return(matrix_rs)
-}
-
