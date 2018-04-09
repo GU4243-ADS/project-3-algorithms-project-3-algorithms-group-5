@@ -26,15 +26,15 @@ load("/Users/miezai/Documents/GitHub/project-3-algorithms-project-3-algorithms-g
 load("/Users/miezai/Documents/GitHub/project-3-algorithms-project-3-algorithms-group-5 copy/data/MS_pred.RData")
 
 load("/Users/miezai/Documents/GitHub/project-3-algorithms-project-3-algorithms-group-5/data/movie_EM_pred_11.RData")
-load("/Users/miezai/Documents/GitHub/project-3-algorithms-project-3-algorithms-group-5/data/MS_EM_pred_9.RData")
+load("/Users/miezai/Documents/GitHub/project-3-algorithms-project-3-algorithms-group-5/data/MS_pred.RData")
 
 
 colnames(MS_EM_pred_9) <- colnames(MS_UI)
 rownames(MS_EM_pred_9) <- rownames(MS_UI)
 
 
-pred <- movie_pred
-test <- movie_UI_test
+pred <- MS_pred
+test <- MS_test
 ```
 
 
