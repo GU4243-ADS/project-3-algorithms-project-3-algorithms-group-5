@@ -20,8 +20,15 @@ packages <- lapply(packages, FUN = function(x) {
 
 ```{r message=FALSE, warning=FALSE}
 # Step 1: load your pred and test data
-# pred = ...
-# test = ...
+load("/Users/miezai/Documents/GitHub/project-3-algorithms-project-3-algorithms-group-5/data/EM_pred_entropy.RData")
+load("/Users/miezai/Documents/GitHub/project-3-algorithms-project-3-algorithms-group-5/data/EM_UI_test.RData")
+load("/Users/miezai/Documents/GitHub/project-3-algorithms-project-3-algorithms-group-5/data/movie_pred.RData")
+
+pred = movie_pred
+test = movie_UI_test
+
+pred_MS = MS_pred
+test_MS = MS_test
 
 source("../lib/evaluation.R")
 ```
@@ -40,6 +47,6 @@ eva_rmse(pred, test)
 
 ```{r message=FALSE, warning=FALSE}
 #Rank scoring for MS
-rank_scoring(pred, test, 5)
+rank_scoring(pred_MS, test_MS, 5)
 ```
 
