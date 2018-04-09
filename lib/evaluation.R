@@ -45,7 +45,7 @@ eva_rmse <- function(prediction, test_data){
 ###rank test metrics by pred
 ranks <- function(pred, test){
   matrix_ranks <- matrix(NA)
-  for (i in 1:ncol(pred)){
+  for (i in 1:ncol(test)){
     rank_pred <- pred[,i] %>% as.data.frame()
     rank_pred <- rank_pred %>% mutate(id = row.names(rank_pred)) %>% arrange(desc(.)) %>% mutate(rank = 1:nrow(rank_pred))
     rank_test_by_pred <- test[,i] %>% as.data.frame()
@@ -55,7 +55,6 @@ ranks <- function(pred, test){
     all <- all %>% arrange(rank) %>% select(test)
     names(all) <- i
     matrix_ranks <- cbind(matrix_ranks,all)
-    print(i)
   } 
   matrix_ranks <- matrix_ranks[-1]
   
