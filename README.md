@@ -61,7 +61,7 @@ Our results showed that for the Microsoft data, the MAE and RMSE were smallest f
 + Yang He: Focused on memory-based algorithm, coded the algorithm implementations and cleaned up the final repo.
 + Sile Yang: Focused on evaluation part, completed MAE, RMSE, Rank Scoring functions, generated evaluations; Helped run EM&MS similarity and prediction data files.
 + Chuyuan Zhou: Coded EM cross validation, helped run EM prediction, created and contributed to ppt and readme.
-+ Minzi Keem: Focused on neighborhood selection, helped run cosine weight prediction, contributed to the ppt and created the main readme file.
++ Minzi Keem: Focused on neighborhood selection part, and generating MAE and RMSE on the neighborhoods, helped run cosine weight prediction, contributed to the ppt and created the main readme file.
 
 
 Following [suggestions](http://nicercode.github.io/blog/2013-04-05-projects/) by [RICH FITZJOHN](http://nicercode.github.io/about/#Team) (@richfitz). This folder is orgarnized as follows.
