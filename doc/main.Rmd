@@ -4,7 +4,10 @@ output: html_document
 ---
 
 ### Step 0: Specify directories 
+
 ```{r}
+install.packages("matrixStats")
+library(matrixStats)
 library(tidyverse)
 source("../lib/functions.R")
 
@@ -29,12 +32,31 @@ EM_train <- EM_train[, 2:4]
 EM_UI_matrix <- movie_data_transform(EM_train)
 save(EM_UI_matrix, file = "../output/EM_UI.RData")
 
-### EM ratings is in scale of 5. Create a normalized matrix in scale of 1 for Mean-squared difference sim weights calculation.
-EM_UI_matrix_n <- EM_UI_matrix / 5
+### EM ratings is in scale of 6. Create a normalized matrix in scale of 1 for Mean-squared difference sim weights calculation.
+EM_UI_matrix_n <- EM_UI_matrix / 6
 
 ```
 
 # Step 2: Model-based Algorithm
+
+For EachMovie dataset
+
+```{r}
+system.time(results<-EM_for_CF(EM_UI_matrix,11))
+save(results,file = "../output/EM_11.RData")
+movie_EM_pred_11 <- movie_EM_pred(results$gamma_array,results$aic_assignment)
+save(movie_EM_pred_11,file = "../output/movie_EM_pred_11.RData")
+```
+
+For Microsoft dataset
+
+```{r}
+system.time(results<-MS_for_CF(MS_UI_matrix,9))
+save(results,file = "../output/MS_for_CF_9.RData")
+MS_EM_pred_9 <- movie_EM_pred(results$gamma_array,results$aic_assignment)
+save(MS_EM_pred_9,file = "../output/MS_EM_pred_9.RData")
+```
+
 
 # Step 3: Memory-based Algorithm
 
@@ -42,7 +64,7 @@ EM_UI_matrix_n <- EM_UI_matrix / 5
 
 Calculate similarity weights for EachMovie dataset.
 
-```{r}
+```{r, warning = FALSE}
 tm_pearson_EM <- NA
 tm_spearman_EM <- NA
 tm_cosine_EM <- NA
@@ -50,16 +72,20 @@ tm_entropy_EM <- NA
 tm_msd_EM <- NA
 
 tm_pearson_EM <- system.time(EM_sim_pearson <- calc_weight(EM_UI_matrix, method = 'pearson'))
-#tm_spearman_EM <- system.time(EM_sim_spearman <- calc_weight(EM_UI_matrix, method = 'spearman'))
+tm_spearman_EM <- system.time(EM_sim_spearman <- calc_weight(EM_UI_matrix, method = 'spearman'))
 tm_cosine_EM <- system.time(EM_sim_cosine <- calc_weight(EM_UI_matrix, method = 'cosine'))
-tm_entropy_EM <- system.time(EM_sim_entropy <- calc_weight(EM_UI_matrix, method = 'entropy'))
-tm_msd_EM <- system.time(EM_sim_msd <- calc_weight(EM_UI_matrix_n, method = 'msd'))
+# need to normalize EM_sim_entropy across rows
+tm_entropy_EM <- system.time(EM_sim_entropy <- normalize_entropy(calc_weight(EM_UI_matrix, method = 'entropy')))
+tm_msd_EM <- system.time(EM_sim_msd <- normalize_entropy(calc_weight(EM_UI_matrix, method = 'msd')))
+
+tm_simr_EM <- system.time(EM_sim_simr <- calc_simrankpp_weight(EM_UI_matrix))
 
 save(EM_sim_pearson, file = "../output/EM_sim_pearson.RData")
-# save(EM_sim_spearman, file = "../output/EM_sim_spearman.RData")
+save(EM_sim_spearman, file = "../output/EM_sim_spearman.RData")
 save(EM_sim_cosine, file = "../output/EM_sim_cosine.RData")
 save(EM_sim_entropy, file = "../output/EM_sim_entropy.RData")
 save(EM_sim_msd, file = "../output/EM_sim_msd.RData")
+save(EM_sim_simr, file = "../output/EM_sim_simr.RData")
 
 ```
 
@@ -71,6 +97,8 @@ cat("Time for Pearson Correlation =", tm_pearson_EM[1], "s \n")
 cat("Time for Spearman Correlation =", tm_spearman_EM[1], "s \n")
 cat("Time for Cosine Vector Similarity =", tm_cosine_EM[1], "s \n")
 cat("Time for Mean-squared Difference =", tm_msd_EM[1], "s \n")
+cat("Time for Entropy-based Method = ", tm_entropy_EM[1], "s \n")
+cat("Time for SimRank Method = ", tm_simr_EM[1], "s \n")
 ```
 
 Run Predictions
@@ -79,12 +107,386 @@ Run Predictions
 EM_pred_pearson <- pred_matrix(EM_UI_matrix, EM_sim_pearson)
 EM_pred_spearman <- pred_matrix(EM_UI_matrix, EM_sim_spearman)
 EM_pred_cosine <- pred_matrix(EM_UI_matrix, EM_sim_cosine)
-EM_pred_msd <- pred_matrix(EM_UI_matrix_n, EM_sim_msd) * 5
+EM_pred_msd <- pred_matrix(EM_UI_matrix, EM_sim_msd)
 EM_pred_entropy <- pred_matrix(EM_UI_matrix, EM_sim_entropy)
+EM_pred_simr <- pred_matrix(EM_UI_matrix, EM_sim_simr)
 
 save(EM_pred_pearson, file = "../output/EM_pred_pearson.RData")
 save(EM_pred_spearman, file = "../output/EM_pred_spearman.RData")
 save(EM_pred_cosine, file = "../output/EM_pred_cosine.RData")
 save(EM_pred_entropy, file = "../output/EM_pred_entropy.RData")
 save(EM_pred_msd, file = "../output/EM_pred_msd.RData")
+save(EM_pred_simr, file = "../output/EM_pred_simr.RData")
 ```
+
+Calculate similarity weights for Microsoft dataset.
+
+```{r, warning = FALSE}
+tm_pearson_MS <- NA
+tm_spearman_MS <- NA
+tm_cosine_MS <- NA
+tm_entropy_MS <- NA
+tm_msd_MS <- NA
+tm_simrank_MS <- NA
+
+tm_pearson_MS <- system.time(MS_sim_pearson <- calc_weight(MS_UI_matrix, method = 'pearson'))
+tm_spearman_MS <- system.time(MS_sim_spearman <- calc_weight(MS_UI_matrix, method = 'spearman'))
+tm_cosine_MS <- system.time(MS_sim_cosine <- calc_weight(MS_UI_matrix, method = 'cosine'))
+tm_entropy_MS <- system.time(MS_sim_entropy <- normalize_entropy(calc_weight(MS_UI_matrix, method = 'entropy')))
+tm_msd_MS <- system.time(MS_sim_msd <- normalize_entropy(calc_weight(MS_UI_matrix, method = 'msd')))
+tm_simrank_MS <- system.time(MS_sim_simr <- calc_simrank_weight(MS_UI_matrix))
+
+save(MS_sim_pearson, file = "../output/MS_sim_pearson.RData")
+save(MS_sim_spearman, file = "../output/MS_sim_spearman.RData")
+save(MS_sim_cosine, file = "../output/MS_sim_cosine.RData")
+save(MS_sim_entropy, file = "../output/MS_sim_entropy.RData")
+save(MS_sim_msd, file = "../output/MS_sim_msd.RData")
+save(MS_sim_simr, file = "../output/MS_sim_simr.RData")
+```
+
+Report time used for calculating the weights.
+
+```{r}
+cat("For Microsoft Dataset: ")
+cat("Time for Pearson Correlation =", tm_pearson_MS[1], "s \n")
+cat("Time for Spearman Correlation =", tm_spearman_MS[1], "s \n")
+cat("Time for Cosine Vector Similarity =", tm_cosine_MS[1], "s \n")
+cat("Time for Mean-squared Difference =", tm_msd_MS[1], "s \n")
+cat("Time for Entropy-based Method = ", tm_entropy_MS[1], "s \n")
+cat("Time for SimRank Method = ", tm_simrank_MS[1], "s \n")
+```
+
+Run Predictions
+
+```{r}
+MS_pred_pearson <- pred_matrix(MS_UI_matrix, MS_sim_pearson)
+MS_pred_spearman <- pred_matrix(MS_UI_matrix, MS_sim_spearman)
+MS_pred_cosine <- pred_matrix(MS_UI_matrix, MS_sim_cosine)
+MS_pred_msd <- pred_matrix(MS_UI_matrix, MS_sim_msd)
+MS_pred_entropy <- pred_matrix(MS_UI_matrix, MS_sim_entropy)
+MS_pred_simr <- pred_matrix(MS_UI_matrix, MS_sim_simr)
+
+save(MS_pred_pearson, file = "../output/MS_pred_pearson.RData")
+save(MS_pred_spearman, file = "../output/MS_pred_spearman.RData")
+save(MS_pred_cosine, file = "../output/MS_pred_cosine.RData")
+save(MS_pred_entropy, file = "../output/MS_pred_entropy.RData")
+save(MS_pred_msd, file = "../output/MS_pred_msd.RData")
+save(MS_pred_simr, file = "../output/MS_pred_simr.RData")
+```
+
+
+### Step 4: Evaluating Predictions.
+
+Load in test data.
+```{r}
+MS_test <- read.csv(MS_test_dir, as.is = TRUE, header = TRUE)
+MS_test <- MS_test[, 2:4]
+
+MS_UI_matrix_test <- MS_data_transform(MS_test)
+save(MS_UI_matrix_test, file = "../output/MS_UI_test.RData")
+
+EM_test <- read.csv(EM_test_dir, as.is = TRUE, header = TRUE)
+EM_test <- EM_test[, 2:4]
+
+EM_UI_matrix_test <- movie_data_transform(EM_test)
+save(EM_UI_matrix_test, file = "../output/EM_UI_test.RData")
+
+source("../lib/evaluation.R")
+```
+
+Ranked Scores.
+
+
+```{r}
+MS_rs_pearson <- rank_scoring(MS_pred, MS_UI_matrix_test, 5)
+MS_rs_spearman <- rank_scoring(MS_pred_spearman, MS_UI_matrix_test, 5)
+MS_rs_cosine <- rank_scoring(MS_pred_cosine, MS_UI_matrix_test, 5)
+MS_rs_msd <- rank_scoring(MS_pred_msd, MS_UI_matrix_test, 5)
+MS_rs_entropy <- rank_scoring(MS_pred_entropy, MS_UI_matrix_test, 5)
+MS_rs_simr <- rank_scoring(MS_pred_simr, MS_UI_matrix_test, 5)
+
+EM_rs_pearson <- rank_scoring(EM_pred_pearson, EM_UI_matrix_test, 5)
+EM_rs_spearman <- rank_scoring(EM_pred_spearman, EM_UI_matrix_test, 5)
+EM_rs_cosine <- rank_scoring(EM_pred_cosine, EM_UI_matrix_test, 5)
+EM_rs_msd <- rank_scoring(EM_pred_msd, EM_UI_matrix_test, 5)
+EM_rs_entropy <- rank_scoring(EM_pred_entropy, EM_UI_matrix_test, 5)
+EM_rs_simr <- rank_scoring(EM_pred_simr, EM_UI_matrix_test, 5)
+
+```
+
+MAE.
+
+```{r}
+MS_mae_pearson <- eva_mae(MS_pred_pearson, MS_UI_matrix_test)
+MS_mae_spearman <- eva_mae(MS_pred_spearman, MS_UI_matrix_test)
+MS_mae_cosine <- eva_mae(MS_pred_cosine, MS_UI_matrix_test)
+MS_mae_msd <- eva_mae(MS_pred_msd, MS_UI_matrix_test)
+MS_mae_entropy <- eva_mae(MS_pred_entropy, MS_UI_matrix_test)
+MS_mae_simr <- eva_mae(MS_pred_simr, MS_UI_matrix_test)
+
+EM_mae_pearson <- eva_mae(EM_pred_pearson, EM_UI_matrix_test)
+EM_mae_spearman <- eva_mae(EM_pred_spearman, EM_UI_matrix_test)
+EM_mae_cosine <- eva_mae(EM_pred_cosine, EM_UI_matrix_test)
+EM_mae_msd <- eva_mae(EM_pred_msd, EM_UI_matrix_test)
+EM_mae_entropy <- eva_mae(EM_pred_entropy, EM_UI_matrix_test)
+EM_mae_simr <- eva_mae(EM_pred_simr, EM_UI_matrix_test)
+
+```
+
+RMSE.
+
+```{r}
+MS_rmse_pearson <- eva_rmse(MS_pred_pearson, MS_UI_matrix_test)
+MS_rmse_spearman <- eva_rmse(MS_pred_spearman, MS_UI_matrix_test)
+MS_rmse_cosine <- eva_rmse(MS_pred_cosine, MS_UI_matrix_test)
+MS_rmse_msd <- eva_rmse(MS_pred_msd, MS_UI_matrix_test)
+MS_rmse_entropy <- eva_rmse(MS_pred_entropy, MS_UI_matrix_test)
+MS_rmse_simr <- eva_rmse(MS_pred_simr, MS_UI_matrix_test)
+
+EM_rmse_pearson <- eva_rmse(EM_pred_pearson, EM_UI_matrix_test)
+EM_rmse_spearman <- eva_rmse(EM_pred_spearman, EM_UI_matrix_test)
+EM_rmse_cosine <- eva_rmse(EM_pred_cosine, EM_UI_matrix_test)
+EM_rmse_msd <- eva_rmse(EM_pred_msd, EM_UI_matrix_test)
+EM_rmse_entropy <- eva_rmse(EM_pred_entropy, EM_UI_matrix_test)
+EM_rmse_simr <- eva_rmse(EM_pred_simr, EM_UI_matrix_test)
+```
+
+### Step 5: Neighborhood selection on Pearson Similarity Weights.
+
+## Step 5.1: Load matrices of similarity weights
+```{r}
+#for MS data
+load("../output/MS_sim_pearson.RData")
+load("../output/EM_sim_pearson.RData")
+load("../output/MS_UI.RData")
+load("../output/EM_UI.RData")
+load("../output/MS_pred_pearson.RData")
+load("../output/EM_pred_pearson.RData")
+load("../output/MS_UI_test.RData")
+load("../output/EM_UI_test.RData")
+dim(MS_sim)
+dim(movie_sim)
+```
+
+```{r}
+install.packages("Metrics")
+install.packages("caret")
+```
+
+```{r}
+library(Metrics)
+library(caret)
+```
+
+
+## Step 5.2: Filtering the data by minimum threshold only
+
+# a. MS: Select neighbors by setting minimum threshold for MS weights to 0.1, 0.2, 0.3, 0.4, and 0.5.
+
+Any weights that are less than the minimum threshold are set to 0.
+```{r}
+MS_corr0.1 <- matrix(MS_sim_pearson, ncol = dim(MS_sim_pearson)[1])
+MS_corr0.1[abs(MS_corr0.1) < 0.1] <- 0
+
+MS_corr0.2 <- matrix(MS_sim_pearson, ncol = dim(MS_sim_pearson)[1])
+MS_corr0.2[abs(MS_corr0.2) < 0.2] <- 0
+
+MS_corr0.3 <- matrix(MS_sim_pearson, ncol = dim(MS_sim_pearson)[1])
+MS_corr0.3[abs(MS_corr0.3) < 0.3] <- 0
+
+MS_corr0.4 <- matrix(MS_sim_pearson, ncol = dim(MS_sim_pearson)[1])
+MS_corr0.4[abs(MS_corr0.4) < 0.4] <- 0
+
+MS_corr0.5 <- matrix(MS_sim_pearson, ncol = dim(MS_sim_pearson)[1])
+MS_corr0.5[abs(MS_corr0.5) < 0.5] <- 0
+```
+
+# b. movie: Select neighbors by setting minimum threshold for movie weights to 0.1, 0.2, 0.3, 0.4, and 0.5.
+
+Any weights that are less than the minimum threshold are set to 0.
+```{r}
+movie_corr0.1 <- matrix(EM_sim_pearson, ncol = dim(EM_sim_pearson)[1])
+movie_corr0.1[abs(movie_corr0.1) < 0.1] <- 0
+
+movie_corr0.2 <- matrix(EM_sim_pearson, ncol = dim(EM_sim_pearson)[1])
+movie_corr0.2[abs(movie_corr0.2) < 0.2] <- 0
+
+movie_corr0.3 <- matrix(EM_sim_pearson, ncol = dim(EM_sim_pearson)[1])
+movie_corr0.3[abs(movie_corr0.3) < 0.3] <- 0
+
+movie_corr0.4 <- matrix(EM_sim_pearson, ncol = dim(EM_sim_pearson)[1])
+movie_corr0.4[abs(movie_corr0.4) < 0.4] <- 0
+
+movie_corr0.5 <- matrix(EM_sim_pearson, ncol = dim(EM_sim_pearson)[1])
+movie_corr0.5[abs(movie_corr0.5) < 0.5] <- 0
+```
+
+
+## Step 5.3: Filtering the data by minimum threshold and setting the number of closest neighbors to an absolute value 
+
+# a. Function to return the position of the n largest values of matrix m, column p. We will use these indices to eventually filter out anything that is not the top n highest correlated users.
+
+```{r}
+nlargest <- function(m, n, p) {
+  res <- order(m[p, ], decreasing = TRUE)[seq_len(n)];
+  pos <- arrayInd(res, dim(m), useNames = TRUE);
+  return(pos)
+}
+```
+
+# b. MS: selecting 20 top correlated neighbors and 40 top correlated neighbors
+```{r}
+# 20 neighbors
+MS_corr0.1_nnbors20 <- matrix(MS_sim_pearson, ncol = dim(MS_sim_pearson)[1])
+MS_corr0.1_nnbors20[abs(MS_corr0.1_nnbors20) < 0.1] <- 0
+
+#temporarily set the diagonals to NA while we find highest correlations; otherwise, the highest correlated in any row will be 1.
+diag(MS_corr0.1_nnbors20) <- NA
+test <- matrix(0, ncol = dim(MS_sim_pearson)[1], nrow = dim(MS_sim_pearson)[1])
+
+for (i in 1:ncol(MS_corr0.1_nnbors20)){
+  temp <- nlargest(MS_corr0.1_nnbors20, 20, i)[, 1]
+  test[temp, i] <- MS_corr0.1_nnbors20[temp, i]
+}
+
+#set the diagonals back to 1
+diag(test) <- 1
+MS_corr0.1_nnbors20 <- test
+
+
+
+# 40 neighbors
+MS_corr0.1_nnbors40 <- matrix(MS_sim_pearson, ncol = dim(MS_sim_pearson)[1])
+MS_corr0.1_nnbors40[abs(MS_corr0.1_nnbors40) < 0.1] <- 0
+
+#temporarily set the diagonals to NA while we find highest correlations; otherwise, the highest correlated in any row will be 1.
+diag(MS_corr0.1_nnbors40) <- NA
+test <- matrix(0, ncol = dim(MS_sim_pearson)[1], nrow = dim(MS_sim_pearson)[1])
+
+for (i in 1:ncol(MS_corr0.1_nnbors40)){
+  temp <- nlargest(MS_corr0.1_nnbors40, 40, i)[, 1]
+  test[temp, i] <- MS_corr0.1_nnbors40[temp, i]
+}
+
+#set the diagonals back to 1
+diag(test) <- 1
+MS_corr0.1_nnbors40 <- test
+```
+
+# c. movie: selecting 20 top correlated neighbors and 40 top correlated neighbors
+```{r}
+# 20 neighbors
+movie_corr0.1_nnbors20 <- matrix(EM_sim_pearson, ncol = dim(EM_sim_pearson)[1])
+movie_corr0.1_nnbors20[abs(movie_corr0.1_nnbors20) < 0.1] <- 0
+
+#temporarily set the diagonals to NA while we find highest correlations; otherwise, the highest correlated in any row will be 1.
+diag(movie_corr0.1_nnbors20) <- NA
+test <- matrix(0, ncol = dim(EM_sim_pearson)[1], nrow = dim(EM_sim_pearson)[1])
+
+for (i in 1:ncol(movie_corr0.1_nnbors20)){
+  temp <- nlargest(movie_corr0.1_nnbors20, 20, i)[, 1]
+  test[temp, i] <- movie_corr0.1_nnbors20[temp, i]
+}
+
+#set the diagonals back to 1
+diag(test) <- 1
+movie_corr0.1_nnbors20 <- test
+
+
+
+# 40 neighbors
+movie_corr0.1_nnbors40 <- matrix(EM_sim_pearson, ncol = dim(EM_sim_pearson)[1])
+movie_corr0.1_nnbors40[abs(movie_corr0.1_nnbors40) < 0.1] <- 0
+
+#temporarily set the diagonals to NA while we find highest correlations; otherwise, the highest correlated in any row will be 1.
+diag(movie_corr0.1_nnbors40) <- NA
+test <- matrix(0, ncol = dim(EM_sim_pearson)[1], nrow = dim(EM_sim_pearson)[1])
+
+for (i in 1:ncol(movie_corr0.1_nnbors40)){
+  temp <- nlargest(movie_corr0.1_nnbors40, 40, i)[, 1]
+  test[temp, i] <- movie_corr0.1_nnbors40[temp, i]
+}
+
+#set the diagonals back to 1
+diag(test) <- 1
+movie_corr0.1_nnbors40 <- test
+```
+
+## Step 5.4: Get the prediction matrix for all filtered datasets
+```{r}
+source("../lib/functions.R")
+```
+
+# a. MS
+```{r}
+MS_corr0.1_pred <- pred_matrix(MS_UI_matrix, MS_corr0.1)
+MS_corr0.2_pred <- pred_matrix(MS_UI_matrix, MS_corr0.2)
+MS_corr0.3_pred <- pred_matrix(MS_UI_matrix, MS_corr0.3)
+MS_corr0.4_pred <- pred_matrix(MS_UI_matrix, MS_corr0.4)
+MS_corr0.5_pred <- pred_matrix(MS_UI_matrix, MS_corr0.5)
+MS_corr0.1_nnbors20_pred <- pred_matrix(MS_UI_matrix, MS_corr0.1_nnbors20)
+MS_corr0.1_nnbors40_pred <- pred_matrix(MS_UI_matrix, MS_corr0.1_nnbors40)
+```
+
+# b. movie
+```{r}
+movie_corr0.1_pred <- pred_matrix(EM_UI_matrix, movie_corr0.1)
+movie_corr0.2_pred <- pred_matrix(EM_UI_matrix, movie_corr0.2)
+movie_corr0.3_pred <- pred_matrix(EM_UI_matrix, movie_corr0.3)
+movie_corr0.4_pred <- pred_matrix(EM_UI_matrix, movie_corr0.4)
+movie_corr0.5_pred <- pred_matrix(EM_UI_matrix, movie_corr0.5)
+movie_corr0.1_nnbors20_pred <- pred_matrix(EM_UI_matrix, movie_corr0.1_nnbors20)
+movie_corr0.1_nnbors40_pred <- pred_matrix(EM_UI_matrix, movie_corr0.1_nnbors40)
+```
+
+## Step 5.5: Get the MAE for the different neighborhood selections
+```{r}
+source("../lib/evaluation.R")
+```
+
+# a. MS
+```{r}
+MSmae <- c(eva_mae(MS_corr0.1_pred, MS_UI), eva_mae(MS_corr0.2_pred, MS_UI), eva_mae(MS_corr0.3_pred, MS_UI), eva_mae(MS_corr0.4_pred, MS_UI), eva_mae(MS_corr0.5_pred, MS_UI), eva_mae(MS_corr0.1_nnbors20_pred, MS_UI), eva_mae(MS_corr0.1_nnbors40_pred, MS_UI))
+
+MSmae
+```
+
+# b. movie
+```{r, warning = FALSE}
+moviemae <- c(eva_mae(movie_corr0.1_pred, movie_UI_test), eva_mae(movie_corr0.2_pred, movie_UI_test), eva_mae(movie_corr0.3_pred, movie_UI_test), eva_mae(movie_corr0.4_pred, movie_UI_test), eva_mae(movie_corr0.5_pred, movie_UI_test), eva_mae(movie_corr0.1_nnbors20_pred, movie_UI_test), eva_mae(movie_corr0.1_nnbors40_pred, movie_UI_test))
+
+moviemae
+```
+
+## Step 5.6: Calculate RMSE for the different neighborhood selections
+
+# a. MS
+```{r}
+MSrmse <- c(eva_rmse(MS_corr0.1_pred, MS_UI_matrix_test), eva_rmse(MS_corr0.2_pred, MS_UI_matrix_test), eva_rmse(MS_corr0.3_pred, MS_UI_matrix_test), eva_rmse(MS_corr0.4_pred, MS_UI_matrix_test), eva_rmse(MS_corr0.5_pred, MS_UI_matrix_test), eva_rmse(MS_corr0.1_nnbors20_pred, MS_UI_matrix_test), eva_rmse(MS_corr0.1_nnbors40_pred, MS_UI_matrix_test))
+
+MSrmse
+```
+
+# b. movie
+```{r, warning = FALSE}
+moviermse <- c(eva_rmse(movie_corr0.1_pred, movie_UI_test), eva_rmse(movie_corr0.2_pred, movie_UI_test), eva_rmse(movie_corr0.3_pred, movie_UI_test), eva_rmse(movie_corr0.4_pred, movie_UI_test), eva_rmse(movie_corr0.5_pred, movie_UI_test), eva_rmse(movie_corr0.1_nnbors20_pred, movie_UI_test), eva_rmse(movie_corr0.1_nnbors40_pred, movie_UI_test))
+
+moviermse
+```
+
+## Step 5.7: Generate relevant figures and tables
+```{r}
+library(data.table)
+
+MSres <- data.frame(MSmae, MSrmse)
+names(MSres)[1] <- "MAE"
+names(MSres)[2] <- "RMSE"
+setattr(MSres, "row.names", c("Min Abs Corr = 0.1", "Min Abs Corr = 0.2", "Min Abs Corr = 0.3", "Min Abs Corr = 0.4", "Min Abs Corr = 0.5", "Min Abs Corr = 0.1, NNbors = 20", "Min Abs Corr = 0.1, NNbors = 40"))
+
+movieres <- data.frame(moviemae, moviermse)
+names(movieres)[1] <- "MAE"
+names(movieres)[2] <- "RMSE"
+setattr(movieres, "row.names", c("Min Abs Corr = 0.1", "Min Abs Corr = 0.2", "Min Abs Corr = 0.3", "Min Abs Corr = 0.4", "Min Abs Corr = 0.5", "Min Abs Corr = 0.1, NNbors = 20", "Min Abs Corr = 0.1, NNbors = 40"))
+```
+
+

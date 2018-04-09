@@ -1,3 +1,8 @@
+install.packages("MLmetrics")
+install.packages("Metrics")
+
+library(MLmetrics)
+library(Metrics)
 
 
 eva_mae <- function(prediction,test_data){
@@ -44,48 +49,62 @@ eva_rmse <- function(prediction, test_data){
 
 ###rank test metrics by pred
 ranks <- function(pred, test){
-  matrix_ranks <- matrix(ncol = pred, nrow = test)
+  matrix_ranks <- matrix(NA)
+  for (i in 1:ncol(test)){
+    rank_pred <- pred[,i] %>% as.data.frame()
+    rank_pred <- rank_pred %>% mutate(id = row.names(rank_pred)) %>% arrange(desc(.)) %>% mutate(rank = 1:nrow(rank_pred))
+    rank_test_by_pred <- test[,i] %>% as.data.frame()
+    rank_test_by_pred <- rank_test_by_pred %>% mutate(id = row.names(rank_test_by_pred))
+    names(rank_test_by_pred) <- c("test","id")
+    all <- merge(rank_pred, rank_test_by_pred) 
+    all <- all %>% arrange(rank) %>% select(test)
+    names(all) <- i
+    matrix_ranks <- cbind(matrix_ranks,all)
+  } 
+  matrix_ranks <- matrix_ranks[-1]
   
-  for (i in 2:nrow(pred)){
-    rank_pred <- sort(pred[i,], decrasing = TRUE)
-    rank_test_by_pred <- test[i,][names(rank_pred)]
-  }
+  return(matrix_ranks)
 }
 
-RS <- function(pred, test){
-  pred = MS_pred[,1]
-  test = MS_UI[,1]
-  pred <- as.data.frame(pred)
-  test <- as.data.frame(test)
-  pred$id <- row.names(pred)
-  test$id <- row.names(test)
-  rs <- merge(pred,test)
-  total = 0
-  for (i in 2:nrow(rs)){
-    p <- rs[i,2] - rs[i,3]
-    p <- max(p,0) 
-    denominator <- (i - 1) / (5 - 1)# set a = 5
-    p <- p / denominator
-    total = total + p
-    if (is.na(total)){
-      print(i)
-      break
-    }
+rank_scoring <- function(pred, test, alpha){
+  
+  # select test equals to 1
+  to_test <- function(test){
+    which(test == 1)
   }
-  return(total)
-}
-
-eva_rs <- function(prediction, test_data){
-  matrix_rs <- matrix(ncol = 2)
-  for (i in 1:nrow(test_data)){
-    cols_to_test <- which(!is.na(test_data[i, ]))
-    pred  <- prediction[i, ]
+  
+  # to rank prediction 
+  ranked <- function(pred){
+    order(pred ,decreasing = TRUE)
+  }
+  
+  # apply it into matrix
+  to_check_test <- apply(test, 1, to_test)
+  ranked_pred <- t(apply(pred, 1, ranked)) 
+  
+  #matrix_d = matrix()
+  #adjust <- ifelse(pred - 0 > 0, pred - 0, 0)
+  
+  
+  r_a <- matrix()
+  r_a_max <- matrix()
+  
+  for(i in 1:nrow(test)){
     
-    rs <- RS(pred, cols_to_test)
+    index_by_pred <- ranked_pred[i,]
+    denominator <-  2^((index_by_pred-1)/(5-1))
+    adjust <- ifelse(pred[i,] - 0 > 0 , pred[i,] - 0 , 0)
     
-    labels <- cbind(i, rs)
-    matrix_rs <- rbind(matrix_rs,labels)
+    r_a[i] <- sum( adjust / denominator )
+    r_a_max[i] <- length(to_check_test[[i]])
+    
   }
-  return(matrix_rs)
+  #matrix_d <- matrix_d[-1]
+  
+  #utility <- adjust/matrix_d
+  #r_a <- rowSums(utility)
+  
+  
+  R <- 100*(sum(r_a)/sum(r_a_max))
+  return(R)
 }
-

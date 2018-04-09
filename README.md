@@ -18,6 +18,9 @@ Term: Spring 2018
 Contribution statement: 
 
 Yujie Hu: Focused on model-based algorithm(EM), helped run entropy weight prediction, made slides and gave presentation.
+Yang He: Focused on memory-based algorithm, coded the algorithm implementations and cleaned up the final repo.
+Chuyuan Zhou: Coded EM cross validation, helped run EM prediction, created and contributed to ppt and readme.
+
 
 Following [suggestions](http://nicercode.github.io/blog/2013-04-05-projects/) by [RICH FITZJOHN](http://nicercode.github.io/about/#Team) (@richfitz). This folder is orgarnized as follows.
 
