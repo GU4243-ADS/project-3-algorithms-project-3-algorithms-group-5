@@ -39,10 +39,12 @@ There are some improvements we can make in the future to gain a better accuracy 
 ### Memory-based Algorithm
 Memory-based algorithm is user-based neighborhood model, using various components for similarity weight.
 1. Pearson’s correlation
-2. Spearman’s correlation
-3. Vector(cosine) similarity
-4. Entropy
-5. SimRank 
+2. Spearman’s correlation: Pearson / Spearman is the same for Microsoft Dataset (0 & 1 entries)
+3. Vector(cosine) similarity: Cosine Vector Similarity method is an “unnormalized” version of Pearson. It works fine for MS data, but since it ignores the “scale” of rating for different users, it does not works well with EachMovie data.
+4. Entropy: For each row in sim weights: w(i, j) = max(w(i, )) - w(i, j) / max(w(i, )) - min(w(i, ))
+5. SimRank: Only ran SimRank on MS data
+
+
 
 ### Evaluation
 For EM dataset, we used the Mean Absolute Error and the Root Mean Square Error. For both values, the smaller the value, the more accurate our predictions are. For MS dataset, which can give us a ordered list of recommendations, we used Rank Scoring Evaluation. 
