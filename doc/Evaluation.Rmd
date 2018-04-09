@@ -20,20 +20,20 @@ packages <- lapply(packages, FUN = function(x) {
 ```{r message=FALSE, warning=FALSE}
 #setwd("/Users/miezai/Documents/GitHub/project-3-algorithms-project-3-algorithms-group-5/data")
 load("/Users/miezai/Documents/GitHub/project-3-algorithms-project-3-algorithms-group-5/data/EM_UI_test.RData")
-MS_UI_test <- load("/Users/miezai/Documents/GitHub/project-3-algorithms-project-3-algorithms-group-5 copy/data/MS_UI_test.RData")
+MS_UI_test <- load("/Users/miezai/Documents/GitHub/project-3-algorithms-project-3-algorithms-group-5 copy/data/MS_test.RData")
 
 load("/Users/miezai/Documents/GitHub/project-3-algorithms-project-3-algorithms-group-5/data/movie_pred.RData")
 load("/Users/miezai/Documents/GitHub/project-3-algorithms-project-3-algorithms-group-5 copy/data/MS_pred.RData")
 
 load("/Users/miezai/Documents/GitHub/project-3-algorithms-project-3-algorithms-group-5/data/movie_EM_pred_11.RData")
-load("/Users/miezai/Documents/GitHub/project-3-algorithms-project-3-algorithms-group-5/data/MS_pred.RData")
+load("/Users/miezai/Documents/GitHub/project-3-algorithms-project-3-algorithms-group-5/data/MS_pred_cosine.RData")
 
 
-colnames(MS_EM_pred_9) <- colnames(MS_UI)
-rownames(MS_EM_pred_9) <- rownames(MS_UI)
+colnames(MS_EM_pred_9) <- colnames(MS_UI_matrix)
+rownames(MS_EM_pred_9) <- rownames(MS_UI_matrix)
 
 
-pred <- MS_pred
+pred <- MS_pred_cosine
 test <- MS_test
 ```
 
