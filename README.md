@@ -44,18 +44,18 @@ Memory-based algorithm is user-based neighborhood model, using various component
 4. Entropy: For each row in sim weights: w(i, j) = max(w(i, )) - w(i, j) / max(w(i, )) - min(w(i, ))
 5. SimRank: Only ran SimRank on MS data
 
-Time Used on Sim-Weight Matrices (Movie)
-![Time](time_using.png)
+Time Used on Sim-Weight Matrices (Movie)  
+<img src="time_using.png" alt="Time used" width=500 height=380>
 
 
 ### Evaluation
 For EM dataset, we used the Mean Absolute Error and the Root Mean Square Error. For both values, the smaller the value, the more accurate our predictions are. For MS dataset, which can give us a ordered list of recommendations, we used Rank Scoring Evaluation. 
 
-Memory-Based Algorithm(MS) Evaluation
-![MS](MS.png)
+Memory-Based Algorithm(MS) Evaluation  
+<img src="MS.png" alt="MS" width=500 height=350>
 
-Memory-Based Algorithm(Movie) 
-![MS](EM.png)
+Memory-Based Algorithm(Movie)  
+<img src="EM.png" alt="EM" width=500 height=350>
 
 ### Neighborhood Selection
 For the purposes of our neighborhood selection, we tried filtering the data by minimum threshold only, and then by the nearest number of neighbors. For both the EM data and the MS data, we tried a minimum threshold of 0.1, 0.2, 0.3, 0.4, 0.5. We did this filtering by setting all the similarity weights under the desired weights to 0.
@@ -69,9 +69,10 @@ Our results showed that for the Microsoft data, the MAE and RMSE were smallest f
 
 + Yujie Hu: Focused on model-based algorithm(EM), helped run entropy weight prediction, made slides and gave presentation.
 + Yang He: Focused on memory-based algorithm, coded the algorithm implementations and cleaned up the final repo.
-+ Sile Yang: Focused on evaluation part, completed MAE, RMSE, Rank Scoring functions, generated evaluations; Helped run EM&MS similarity and prediction data files.
-+ Chuyuan Zhou: Coded EM cross validation, helped run EM prediction, created and contributed to ppt and readme.
++ Sile Yang: Focused on evaluation part, completed MAE, RMSE, Rank Scoring functions, generated evaluations; Helped run EM & MS similarity and prediction data files.
 + Minzi Keem: Focused on neighborhood selection part, and generating MAE and RMSE on the neighborhoods, helped run cosine weight prediction, contributed to the ppt and created the main readme file.
++ Chuyuan Zhou: Coded EM cross validation, helped run EM prediction, created and contributed to ppt and readme.
+
 
 
 Following [suggestions](http://nicercode.github.io/blog/2013-04-05-projects/) by [RICH FITZJOHN](http://nicercode.github.io/about/#Team) (@richfitz). This folder is orgarnized as follows.
