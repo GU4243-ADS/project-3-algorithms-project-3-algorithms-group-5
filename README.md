@@ -53,6 +53,7 @@ Our results showed that for the Microsoft data, the MAE and RMSE were smallest f
 
 + Yujie Hu: Focused on model-based algorithm(EM), helped run entropy weight prediction, made slides and gave presentation.
 + Yang He: Focused on memory-based algorithm, coded the algorithm implementations and cleaned up the final repo.
++ Sile Yang: Focused on evaluation part, completed MAE, RMSE, Rank Scoring functions, generated evaluations; Helped run EM&MS similarity and prediction data files.
 + Chuyuan Zhou: Coded EM cross validation, helped run EM prediction, created and contributed to ppt and readme.
 + Minzi Keem: Focused on neighborhood selection, helped run cosine weight prediction, contributed to the ppt and created the main readme file.
 
