@@ -6,6 +6,7 @@ output: html_document
 ---
 
 ```{r message=FALSE, warning=FALSE}
+#require packages 
 
 packages <- c("MLmetrics","Metrics","tidyverse")
 
@@ -18,40 +19,27 @@ packages <- lapply(packages, FUN = function(x) {
 ```
 
 ```{r message=FALSE, warning=FALSE}
-#setwd("/Users/miezai/Documents/GitHub/project-3-algorithms-project-3-algorithms-group-5/data")
-load("/Users/miezai/Documents/GitHub/project-3-algorithms-project-3-algorithms-group-5/data/EM_UI_test.RData")
-MS_UI_test <- load("/Users/miezai/Documents/GitHub/project-3-algorithms-project-3-algorithms-group-5 copy/data/MS_test.RData")
+# Step 1: load your pred and test data
+# pred = ...
+# test = ...
 
-load("/Users/miezai/Documents/GitHub/project-3-algorithms-project-3-algorithms-group-5/data/movie_pred.RData")
-load("/Users/miezai/Documents/GitHub/project-3-algorithms-project-3-algorithms-group-5 copy/data/MS_pred.RData")
-
-load("/Users/miezai/Documents/GitHub/project-3-algorithms-project-3-algorithms-group-5/data/movie_EM_pred_11.RData")
-load("/Users/miezai/Documents/GitHub/project-3-algorithms-project-3-algorithms-group-5/data/MS_pred_cosine.RData")
-
-
-colnames(MS_EM_pred_9) <- colnames(MS_UI_matrix)
-rownames(MS_EM_pred_9) <- rownames(MS_UI_matrix)
-
-
-pred <- MS_EM_pred_9
-test <- MS_test
+source("../lib/evaluation.R")
 ```
 
 
 ### Evaluation 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-source("../lib/evaluation.R")
-
-#MAE
+#MAE for EM
 eva_mae(pred, test)
 ```
 
 ```{r message=FALSE, warning=FALSE}
-#RMSE
+#RMSE for EM
 eva_rmse(pred, test)
 ```
 
 ```{r message=FALSE, warning=FALSE}
+#Rank scoring for MS
 rank_scoring(pred, test, 5)
 ```
 
